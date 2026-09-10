@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Какой клуб твой?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F4F6FA;
+    --surface: #FFFFFF;
+    --ink: #12151C;
+    --ink-soft: #565E6E;
+    --line: #DBE1EC;
+    --accent: #2B5BFF;
+    --accent-soft: #E7ECFF;
+    --accent2: #FF6A45;
+    --accent2-soft: #FFE9E2;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background-image:
+      linear-gradient(90deg, rgba(43,91,255,0.05) 1px, transparent 1px),
+      linear-gradient(rgba(43,91,255,0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 32px 16px 64px;
+  }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .wrap{ width:100%; max-width:600px; }
+  .badge-row{ display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .dot{ width:9px;height:9px;border-radius:50%; background:var(--accent); }
+  .dot.phase2{ background: var(--accent2); }
+  .kicker{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; color: var(--ink-soft); }
+  h1{ font-size: 28px; line-height:1.15; font-weight:700; margin: 0 0 10px; }
+  .lede{ color: var(--ink-soft); font-size:15.5px; line-height:1.55; margin: 0 0 26px; max-width: 54ch; }
+  .card{ background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 26px; box-shadow: 0 1px 0 rgba(18,21,28,0.03); }
+  .progress-track{ height:6px; background: var(--accent-soft); border-radius:99px; overflow:hidden; margin-bottom:10px; }
+  .progress-fill{ height:100%; background: var(--accent); border-radius:99px; transition: width .3s ease; width:0%; }
+  .progress-fill.phase2{ background: var(--accent2); }
+  .progress-label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color: var(--ink-soft); margin-bottom:22px; display:flex; justify-content:space-between; }
+  .phase-tag{ display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:11px; padding:3px 9px; border-radius:99px; background:var(--accent-soft); color:var(--accent); margin-bottom:14px; }
+  .phase-tag.phase2{ background:var(--accent2-soft); color:var(--accent2); }
+  .q-text{ font-size:18.5px; font-weight:600; line-height:1.4; margin: 4px 0 22px; min-height: 60px; }
+  .yn-row{ display:flex; gap:10px; }
+  .yn-row button{ flex:1; padding:14px; border-radius:10px; border:1.5px solid var(--line); background:#fff; font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; color:var(--ink-soft); cursor:pointer; transition: all .15s ease; }
+  .yn-row button:hover{ border-color:var(--accent); color:var(--accent); }
+  .yn-row button.picked{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  .pair-block{ margin-bottom:22px; }
+  .pair-label{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .pair-text{ font-size:16px; font-weight:600; line-height:1.4; margin-bottom:12px; }
+  .scale{ display:flex; gap:7px; }
+  .scale button{ flex:1; aspect-ratio:1; border-radius:10px; border:1.5px solid var(--line); background:#fff; font-family:'IBM Plex Mono', monospace; font-size:14px; font-weight:600; color:var(--ink-soft); cursor:pointer; transition: all .15s ease; }
+  .scale button:hover{ border-color:var(--accent2); color:var(--accent2); }
+  .scale button.picked{ background:var(--accent2); border-color:var(--accent2); color:#fff; }
+  .scale-labels{ display:flex; justify-content:space-between; font-size:11px; color:var(--ink-soft); margin-top:6px; font-family:'IBM Plex Mono', monospace; }
+
+  .nav-row{ display:flex; justify-content:space-between; align-items:center; margin-top:24px; }
+  .btn{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; border:none; border-radius:10px; padding:13px 22px; cursor:pointer; }
+  .btn:active{ transform: scale(0.98); }
+  .btn-primary{ background: var(--ink); color:#fff; }
+  .btn-primary:disabled{ opacity:0.3; cursor:not-allowed; }
+  .btn-ghost{ background:transparent; color: var(--ink-soft); padding:13px 6px; }
+  .btn-ghost:disabled{ opacity:0; cursor:default; }
+
+  .start-btn{ background: var(--ink); color:#fff; font-size:16px; padding:15px 28px; border:none; border-radius:10px; cursor:pointer; }
+  .start-meta{ display:flex; gap:18px; margin-top:22px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; color: var(--ink-soft); flex-wrap:wrap; }
+
+  .result-tag{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; color: var(--accent); margin-bottom:8px; }
+  .result-title{ font-size:24px; font-weight:700; margin:0 0 10px; line-height:1.25; }
+  .result-sub{ color: var(--ink-soft); font-size:15px; line-height:1.6; margin:0 0 24px; }
+
+  .section-label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-soft); margin: 30px 0 12px; text-transform:none; }
+  .bars{ display:flex; flex-direction:column; gap:12px; margin-bottom:8px; }
+  .bar-row{ display:grid; grid-template-columns: 168px 1fr 38px; align-items:center; gap:12px; }
+  .bar-name{ font-size:13px; font-weight:600; }
+  .bar-track{ background: var(--accent-soft); border-radius:99px; height:9px; overflow:hidden; }
+  .bar-track.v2{ background: var(--accent2-soft); }
+  .bar-fill{ height:100%; border-radius:99px; background: var(--line); transition: width .6s ease; }
+  .bar-fill.top{ background: var(--accent); }
+  .bar-fill.top.v2{ background: var(--accent2); }
+  .bar-pct{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color: var(--ink-soft); text-align:right; }
+
+  .club-card{ border:1.5px solid var(--ink); border-radius: var(--radius); padding:18px 20px; margin-bottom:12px; }
+  .club-card.secondary{ border-color: var(--line); }
+  .club-top-row{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:6px; }
+  .club-name{ font-size:17px; font-weight:700; margin:0; }
+  .club-pct{ font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--accent); white-space:nowrap; }
+  .club-tag{ display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--ink-soft); background:var(--bg); border:1px solid var(--line); border-radius:99px; padding:2px 8px; margin-bottom:8px; }
+  .club-desc{ font-size:14px; color: var(--ink-soft); line-height:1.5; margin:0; }
+
+  .restart{ margin-top:18px; background:transparent; border:1.5px solid var(--line); color: var(--ink); font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:14px; padding:12px 20px; border-radius:10px; cursor:pointer; }
+  .footnote{ margin-top:24px; font-size:11.5px; color: var(--ink-soft); line-height:1.6; }
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="badge-row">
+    <span class="dot" id="headerDot"></span>
+    <span class="kicker">ЯРМАРКА КЛУБОВ — ПОДБОР ПО ПРОФИЛЮ</span>
+  </div>
+
+  <!-- START -->
+  <div id="screen-start">
+    <h1>Какой клуб твой?</h1>
+    <p class="lede">Два коротких психологических опросника — тип мышления и сильные стороны характера — а в конце подборка клубов, которые реально тебе подойдут, а не просто первые попавшиеся.</p>
+    <div class="card">
+      <p style="margin:0 0 4px; font-weight:600; font-size:15px;">Из чего состоит</p>
+      <p style="margin:0 0 20px; color:var(--ink-soft); font-size:14.5px; line-height:1.55;">
+        Часть 1 — 40 коротких утверждений «да / нет» о том, как ты мыслишь и усваиваешь информацию.<br>
+        Часть 2 — 23 пары утверждений о твоих сильных сторонах, каждое оценивается отдельно.<br>
+        В конце — твой профиль и живой список клубов под него.
+      </p>
+      <button class="start-btn" onclick="startQuiz()">Начать →</button>
+    </div>
+    <div class="start-meta">
+      <span>63 пункта</span>
+      <span>~12–15 мин</span>
+      <span>результат сразу</span>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="hidden">
+    <div class="card">
+      <span class="phase-tag" id="phaseTag">ЧАСТЬ 1 — ТИП МЫШЛЕНИЯ</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label">
+        <span id="progressText" class="mono"></span>
+        <span class="mono">CLUB MATCH</span>
+      </div>
+
+      <!-- yes/no block -->
+      <div id="ynBlock">
+        <div class="q-text" id="ynText"></div>
+        <div class="yn-row">
+          <button id="ynYes" onclick="answerYN(1)">Да</button>
+          <button id="ynNo" onclick="answerYN(0)">Нет</button>
+        </div>
+      </div>
+
+      <!-- pair block -->
+      <div id="pairBlock" class="hidden">
+        <div class="pair-block">
+          <div class="pair-label mono">УТВЕРЖДЕНИЕ А</div>
+          <div class="pair-text" id="pairTextA"></div>
+          <div class="scale" id="scaleA"></div>
+          <div class="scale-labels"><span>совсем не про меня</span><span>точно про меня</span></div>
+        </div>
+        <div class="pair-block" style="margin-bottom:6px;">
+          <div class="pair-label mono">УТВЕРЖДЕНИЕ Б</div>
+          <div class="pair-text" id="pairTextB"></div>
+          <div class="scale" id="scaleB"></div>
+          <div class="scale-labels"><span>совсем не про меня</span><span>точно про меня</span></div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" id="backBtn" onclick="prevStep()">← назад</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextStep()" disabled>Дальше</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="hidden">
+    <div class="result-tag mono">ТВОЙ ПРОФИЛЬ</div>
+    <h1 class="result-title" id="resultTitle"></h1>
+    <p class="result-sub" id="resultSub"></p>
+
+    <div class="section-label mono">ТИП МЫШЛЕНИЯ</div>
+    <div class="bars" id="barsThink"></div>
+
+    <div class="section-label mono">СИЛЬНЫЕ СТОРОНЫ ХАРАКТЕРА</div>
+    <div class="bars" id="barsVia"></div>
+
+    <div class="section-label mono">КЛУБЫ ПОД ТВОЙ ПРОФИЛЬ</div>
+    <div id="clubsWrap"></div>
+
+    <button class="restart" onclick="restartQuiz()">Пройти ещё раз</button>
+
+    <p class="footnote">Методики: опросник типа мышления Дж. Брунера в модификации Г.В. Резапкиной; сокращённый русскоязычный вариант опросника К. Петерсона и М. Селигмана VIA-IS (адаптация С.А. Башкатова, 2020). Подборка клубов — ориентир, а не диагноз: пробовать можно любое количество направлений.</p>
+  </div>
+
+</div>
+
+<script>
+/* ===================== DATA: THINKING TYPE ===================== */
+const THINK_Q = [
+  {t:"Мне легче что-либо сделать самому, чем объяснить другому.", ax:"PD"},
+  {t:"Мне интересно составлять компьютерные программы.", ax:"AS"},
+  {t:"Я люблю читать книги.", ax:"SL"},
+  {t:"Мне нравится живопись, скульптура, архитектура.", ax:"NO"},
+  {t:"Даже в отлаженном деле я стараюсь что-то улучшить.", ax:"CR"},
+  {t:"Я лучше понимаю, если мне объясняют на предметах или рисунках.", ax:"PD"},
+  {t:"Я люблю играть в шахматы.", ax:"AS"},
+  {t:"Я легко излагаю свои мысли как в устной, так и в письменной форме.", ax:"SL"},
+  {t:"Когда я читаю книгу, я чётко вижу её героев и описываемые события.", ax:"NO"},
+  {t:"Я предпочитаю самостоятельно планировать свою работу.", ax:"CR"},
+  {t:"Мне нравится всё делать своими руками.", ax:"PD"},
+  {t:"В детстве я создавал(а) свой шифр для переписки с друзьями.", ax:"AS"},
+  {t:"Я придаю большое значение сказанному слову.", ax:"SL"},
+  {t:"Знакомые мелодии вызывают у меня в голове определённые картины.", ax:"NO"},
+  {t:"Разнообразные увлечения делают жизнь человека богаче и ярче.", ax:"CR"},
+  {t:"При решении задачи мне легче идти методом проб и ошибок.", ax:"PD"},
+  {t:"Мне интересно разбираться в природе физических явлений.", ax:"AS"},
+  {t:"Мне интересна работа ведущего теле-радиопрограмм, журналиста.", ax:"SL"},
+  {t:"Мне легко представить предмет или животное, которых нет в природе.", ax:"NO"},
+  {t:"Мне больше нравится процесс деятельности, чем сам результат.", ax:"CR"},
+  {t:"Мне нравилось в детстве собирать конструктор из деталей, лего.", ax:"PD"},
+  {t:"Я предпочитаю точные науки (математику, физику).", ax:"AS"},
+  {t:"Меня восхищает точность и глубина некоторых стихов.", ax:"SL"},
+  {t:"Знакомый запах вызывает в моей памяти прошлые события.", ax:"NO"},
+  {t:"Я не хотел(а) бы подчинять свою жизнь определённой системе.", ax:"CR"},
+  {t:"Когда я слышу музыку, мне хочется танцевать.", ax:"PD"},
+  {t:"Я понимаю красоту математических формул.", ax:"AS"},
+  {t:"Мне легко говорить перед любой аудиторией.", ax:"SL"},
+  {t:"Я люблю посещать выставки, спектакли, концерты.", ax:"NO"},
+  {t:"Я сомневаюсь даже в том, что для других очевидно.", ax:"CR"},
+  {t:"Я люблю заниматься рукоделием, что-то мастерить.", ax:"PD"},
+  {t:"Мне интересно было бы расшифровать древние тайнописи.", ax:"AS"},
+  {t:"Я легко усваиваю грамматические конструкции языка.", ax:"SL"},
+  {t:"Я согласен(на), что красота спасёт мир.", ax:"NO"},
+  {t:"Не люблю ходить одним и тем же путём.", ax:"CR"},
+  {t:"Истинно только то, что можно потрогать руками.", ax:"PD"},
+  {t:"Я легко запоминаю формулы, символы, условные обозначения.", ax:"AS"},
+  {t:"Друзья любят слушать, когда я им что-то рассказываю.", ax:"SL"},
+  {t:"Я легко могу представить в образах содержание рассказа или фильма.", ax:"NO"},
+  {t:"Я не могу успокоиться, пока не доведу свою работу до совершенства.", ax:"CR"}
+];
+
+const THINK_NAMES = {
+  PD:"Предметно-действенное", AS:"Абстрактно-символическое", SL:"Словесно-логическое", NO:"Наглядно-образное", CR:"Креативность"
+};
+const THINK_DESC = {
+  PD:"Ты учишься через действие и практику — тебе важно потрогать, собрать и попробовать самому.",
+  AS:"Тебе легко даются формулы, код и символические системы — абстрактная логика тебя не пугает.",
+  SL:"Ты легко формулируешь мысли словом — устно и письменно — и умеешь убеждать.",
+  NO:"Ты мыслишь образами, формой и цветом — тебе близко визуальное и художественное восприятие мира.",
+  CR:"Ты склонен(на) искать нестандартные решения и не любишь просто повторять готовые шаблоны."
+};
+
+/* ===================== DATA: VIA-IS (SHORT) ===================== */
+const VIA_PAIRS = [
+  {a:"Я всегда любознателен(на).", b:"Мне всё быстро надоедает.", sub:1},
+  {a:"Я с удовольствием узнаю что-то новое.", b:"Я не посещаю ни музеи, ни другие культурные учреждения.", sub:2},
+  {a:"В случае необходимости я способен(на) мыслить критически.", b:"Я склонен(на) к скоропалительным выводам.", sub:3},
+  {a:"Мне нравится всё делать по-новому.", b:"Большинство моих друзей гораздо более творческие личности, чем я сам(а).", sub:4},
+  {a:"Я могу приспособиться к любой ситуации.", b:"Я плохо улавливаю чувства других людей.", sub:5},
+  {a:"Я всегда способен(на) взглянуть на происходящее в целом, с учётом перспективы.", b:"Ко мне редко обращаются за советом.", sub:6},
+  {a:"Я всегда выполняю свой долг, несмотря на любые трудности и опасности.", b:"Я часто падаю духом перед лицом серьёзных трудностей или опасностей.", sub:7},
+  {a:"Я всегда довожу начатое дело до конца.", b:"Занимаясь каким-либо делом, я часто отвлекаюсь от основной цели.", sub:8},
+  {a:"Я всегда исполняю обещания.", b:"Мне ещё никто не говорил, что я реалист(ка).", sub:9},
+  {a:"Я недавно помог(ла) кому-то совершенно добровольно.", b:"Я очень редко принимаю близко к сердцу судьбы других людей.", sub:10},
+  {a:"Среди моих друзей есть те, кто заботится обо мне не меньше, чем о себе.", b:"Я не часто позволяю себя любить.", sub:11},
+  {a:"Лучше всего я работаю в команде.", b:"Я ещё подумаю, прежде чем решиться пожертвовать своими интересами ради коллектива.", sub:12},
+  {a:"Я одинаково отношусь ко всем людям независимо от их положения.", b:"Если я кого-то недолюбливаю, мне трудно относиться к нему объективно.", sub:13},
+  {a:"Я способен(на) организовать работу коллектива, не изводя людей.", b:"Я плохо умею организовать работу коллектива.", sub:14},
+  {a:"Я контролирую свои эмоции.", b:"Я с трудом выдерживаю диету.", sub:15},
+  {a:"Я избегаю занятий, угрожающих здоровью.", b:"Я часто ошибаюсь, выбирая друзей и знакомых.", sub:16},
+  {a:"Недавно я испытал(а) настоящий восторг от произведения искусства, музыки или зрелища.", b:"За последний год я не создал(а) ничего прекрасного.", sub:17},
+  {a:"Я всегда благодарю людей, даже за мелочи.", b:"Я редко задумываюсь над тем, кому и за что должен быть благодарен.", sub:18},
+  {a:"Я всегда и во всём пытаюсь отыскать положительную сторону.", b:"Я редко думаю о том, что хотел(а) бы сделать в будущем.", sub:19},
+  {a:"Моя жизнь подчинена важной для меня цели.", b:"Я не знаю, в чём моё призвание.", sub:20},
+  {a:"Я легко отпускаю прошлые обиды.", b:"Я всегда свожу счёты с обидчиками.", sub:21},
+  {a:"Я всегда по возможности перемежаю работу шуткой и весёлостью.", b:"Я редко говорю смешные вещи.", sub:22},
+  {a:"Я всецело отдаюсь всему, что делаю.", b:"Я нередко бываю подавлен(а) и ко всему безучастен(на).", sub:23}
+];
+
+const VIRTUE_RANGES = { WI:[1,6], CO:[7,9], HU:[10,11], JU:[12,14], TE:[15,16], TR:[17,23] };
+const VIRTUE_NAMES = {
+  WI:"Мудрость и знание", CO:"Мужество", HU:"Гуманизм и любовь", JU:"Справедливость", TE:"Умеренность", TR:"Духовность"
+};
+const VIRTUE_DESC = {
+  WI:"Тебя тянет узнавать новое, анализировать и видеть картину целиком.",
+  CO:"Ты умеешь держаться в трудностях, доводить дело до конца и оставаться верным(ой) своим словам.",
+  HU:"Тебе важны близкие отношения, забота о других и открытость к людям.",
+  JU:"Тебе важна команда, честность и то, как организовано взаимодействие в группе.",
+  TE:"Тебе свойственны самоконтроль и разумная осторожность в решениях.",
+  TR:"Тебе близки красота, благодарность, смысл и чувство юмора в жизни."
+};
+
+/* ===================== DATA: CLUBS ===================== */
+const CLUBS = [
+  {id:"basketball", name:"AITU Basketball Club", tag:"Спорт", desc:"Регулярные тренировки, командная работа и спортивные активности.", w:{CO:2,JU:2,PD:1}},
+  {id:"volleyball", name:"AITU Volleyball Club", tag:"Спорт", desc:"Тренировки для всех уровней, дружеская атмосфера и спортивные вызовы.", w:{JU:2,CO:2,PD:1}},
+  {id:"running", name:"AITU Running", tag:"Спорт", desc:"Совместные пробежки, челленджи и участие в мероприятиях.", w:{CO:2,TE:2,PD:1}},
+  {id:"cycling", name:"AITU Cycling Club", tag:"Спорт", desc:"Велопоездки, активный отдых и комьюнити любителей скорости.", w:{CO:2,TE:1,PD:1}},
+  {id:"calisthenics", name:"Calisthenics Club", tag:"Спорт", desc:"Тренировки, развитие силы и выносливости, дисциплина.", w:{TE:2,CO:2,PD:1}},
+  {id:"armwrestling", name:"AITU Arm-Wrestling", tag:"Спорт", desc:"Техника и сила в армрестлинге, тренировки и соревнования.", w:{CO:2,PD:2}},
+  {id:"tabletennis", name:"Table Tennis", tag:"Спорт", desc:"Настольный теннис для всех: тренировки, игры, соревновательная атмосфера.", w:{PD:2,TE:1,CR:1}},
+  {id:"cheerleading", name:"Cheerleading", tag:"Спорт", desc:"Поддержка команд танцами и кричалками, атмосфера на мероприятиях.", w:{JU:2,NO:2,TR:1}},
+
+  {id:"orchestra", name:"AITU Orchestra", tag:"Музыка", desc:"Объединяет музыкантов разных инструментов для репетиций и выступлений.", w:{NO:2,TR:2,PD:1}},
+  {id:"choir", name:"AITU Choir", tag:"Музыка", desc:"Вокальный коллектив для регулярных занятий и концертов.", w:{NO:1,TR:2,HU:1}},
+  {id:"musicclub", name:"Music Club", tag:"Музыка", desc:"Свободное пространство для музыкантов и создания треков.", w:{CR:2,NO:2,TR:1}},
+  {id:"dance", name:"Dance Club", tag:"Музыка", desc:"Танцы разных стилей, регулярные тренировки и выступления.", w:{NO:2,PD:2,TR:1}},
+
+  {id:"anime", name:"Anime Club", tag:"Культура", desc:"Для любителей аниме и японской культуры: просмотры, обсуждения, игры.", w:{NO:2,TR:1,CR:1}},
+  {id:"kca", name:"AITU KCA", tag:"Культура", desc:"Корейская культурная ассоциация: традиционные и современные проекты.", w:{TR:1,HU:2}},
+  {id:"jca", name:"AITU JCA", tag:"Культура", desc:"Японская культурная ассоциация: язык, мероприятия, традиции.", w:{TR:1,HU:2}},
+  {id:"devine", name:"Devine", tag:"Культура", desc:"Женское комьюнити творческих студенток для обмена идеями и проектов.", w:{CR:2,HU:2,NO:1}},
+  {id:"buddy", name:"Buddy", tag:"Культура", desc:"Поддержка иностранных студентов: язык, адаптация, мероприятия.", w:{HU:2,SL:2,JU:1}},
+
+  {id:"gdsc", name:"Google Developer Student Club (GDSC)", tag:"IT", desc:"Воркшопы, мероприятия и проекты с реальными технологиями.", w:{AS:2,PD:1,WI:1}},
+  {id:"aws", name:"AITU AWS 3C", tag:"IT", desc:"Облачные технологии и работа с AWS, практический опыт.", w:{AS:2,WI:1}},
+  {id:"electronics", name:"AITU Electronics", tag:"IT", desc:"Проекты в области электроники и устройств.", w:{PD:2,AS:1}},
+  {id:"seds", name:"SEDS AITU", tag:"IT", desc:"Клуб космических технологий и инженерных проектов.", w:{AS:2,PD:1,CO:1}},
+  {id:"gamedev", name:"Game-Dev Club AITU", tag:"IT", desc:"Разработка игр, командные проекты, создание собственных игр.", w:{CR:2,NO:1,AS:1}},
+
+  {id:"siam", name:"SIAM AITU SC", tag:"Интеллект", desc:"Математика, аналитика и научные активности.", w:{AS:2,WI:2}},
+  {id:"chess", name:"Chess Club", tag:"Интеллект", desc:"Шахматы, турниры и стратегическое мышление.", w:{AS:2,TE:1,WI:1}},
+  {id:"coffeephilo", name:"Coffee-Philo", tag:"Интеллект", desc:"Обсуждение философии и идей в неформальной атмосфере.", w:{SL:2,WI:2}},
+  {id:"intellectum", name:"Intellectum Games", tag:"Интеллект", desc:"Квизы, интеллектуальные игры и соревнования.", w:{WI:2,SL:1}},
+  {id:"boardgames", name:"Board Games", tag:"Интеллект", desc:"Настольные игры и регулярные встречи.", w:{AS:1,JU:1,WI:1}},
+  {id:"tedx", name:"TEDx AITU", tag:"Интеллект", desc:"Организация конференций и выступлений, публичные речи.", w:{SL:2,WI:1,CO:1}},
+  {id:"logos", name:"LOGOS", tag:"Интеллект", desc:"Дебаты как интеллектуальный спорт: логика, речь, аргументация.", w:{SL:2,CO:1,WI:1}},
+  {id:"mun", name:"MUN", tag:"Интеллект", desc:"Подготовка к конференциям ООН, дебаты и дипломатия.", w:{SL:2,JU:1,WI:1}},
+
+  {id:"art", name:"ART Club", tag:"Творчество", desc:"Рисование, арт-проекты и участие в мероприятиях.", w:{NO:2,CR:2,TR:1}},
+  {id:"cooking", name:"Cooking Club", tag:"Творчество", desc:"Кулинарные мастер-классы, встречи и обмен опытом.", w:{PD:2,CR:1,TR:1}},
+  {id:"tyfmedia", name:"TYF.Media", tag:"Творчество", desc:"Создание медиа-контента, съёмка и продакшн.", w:{NO:1,CR:1,SL:1}},
+  {id:"aitulive", name:"AITU Live", tag:"Творчество", desc:"Контент о студенческой жизни и событиях университета.", w:{SL:1,CR:1,JU:1}},
+
+  {id:"gaming", name:"AITU Gaming", tag:"Игры", desc:"Киберспорт, турниры и игровые мероприятия.", w:{AS:1,CO:1,CR:1}},
+  {id:"mafia", name:"AITU Mafia", tag:"Игры", desc:"Игра в мафию, живая студенческая атмосфера, стратегия.", w:{SL:2,AS:1,JU:1}},
+
+  {id:"hustlelab", name:"HUSTLE LAB", tag:"Бизнес", desc:"Предпринимательство, бизнес-мышление, стартапы на практике.", w:{CO:2,CR:1,WI:1}},
+
+  {id:"volunteers", name:"AITU Volunteers", tag:"Волонтёрство", desc:"Волонтёрство и участие в социальных проектах.", w:{HU:2,JU:1}},
+  {id:"sanaly", name:"Sanaly Urpaq", tag:"Волонтёрство", desc:"Социальные инициативы, правовая поддержка, культура честности.", w:{JU:2,HU:1}},
+  {id:"jurek", name:"Jurek Charity", tag:"Волонтёрство", desc:"Благотворительные акции и социальные инициативы.", w:{HU:2,JU:1}},
+  {id:"ombudsman", name:"Ombudsman", tag:"Волонтёрство", desc:"Защита прав студентов, справедливость и прозрачность процессов.", w:{JU:2,SL:1}},
+
+  {id:"psyclub", name:"Psyclub", tag:"Психология", desc:"Пространство для общения, размышлений о чувствах и эмоциях.", w:{HU:2,WI:1,TR:1}}
+];
+
+/* ===================== ENGINE ===================== */
+let phase = 1; // 1 = thinking, 2 = via
+let thinkIdx = 0;
+let viaIdx = 0;
+let thinkAnswers = new Array(THINK_Q.length).fill(null);
+let viaAnswers = new Array(VIA_PAIRS.length).fill(null).map(()=>({a:null,b:null}));
+
+const TOTAL_STEPS = THINK_Q.length + VIA_PAIRS.length;
+
+function startQuiz(){
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-quiz').classList.remove('hidden');
+  render();
+}
+
+function currentGlobalStep(){
+  return phase === 1 ? thinkIdx : (THINK_Q.length + viaIdx);
+}
+
+function render(){
+  const done = currentGlobalStep();
+  document.getElementById('progressFill').style.width = (done/TOTAL_STEPS*100)+'%';
+  document.getElementById('progressFill').className = 'progress-fill' + (phase===2 ? ' phase2':'');
+  document.getElementById('headerDot').className = 'dot' + (phase===2 ? ' phase2':'');
+  document.getElementById('phaseTag').className = 'phase-tag' + (phase===2 ? ' phase2':'');
+  document.getElementById('phaseTag').textContent = phase===1 ? 'ЧАСТЬ 1 — ТИП МЫШЛЕНИЯ' : 'ЧАСТЬ 2 — СИЛЬНЫЕ СТОРОНЫ ХАРАКТЕРА';
+  document.getElementById('progressText').textContent = 'Пункт ' + (done+1) + ' из ' + TOTAL_STEPS;
+
+  if(phase === 1){
+    document.getElementById('ynBlock').classList.remove('hidden');
+    document.getElementById('pairBlock').classList.add('hidden');
+    renderYN();
+  } else {
+    document.getElementById('ynBlock').classList.add('hidden');
+    document.getElementById('pairBlock').classList.remove('hidden');
+    renderPair();
+  }
+
+  document.getElementById('backBtn').disabled = (phase===1 && thinkIdx===0);
+  const isLast = (phase===2 && viaIdx === VIA_PAIRS.length - 1);
+  document.getElementById('nextBtn').textContent = isLast ? 'Результат →' : 'Дальше';
+}
+
+function renderYN(){
+  const q = THINK_Q[thinkIdx];
+  document.getElementById('ynText').textContent = q.t;
+  const val = thinkAnswers[thinkIdx];
+  document.getElementById('ynYes').className = val===1 ? 'picked' : '';
+  document.getElementById('ynNo').className = val===0 ? 'picked' : '';
+  document.getElementById('nextBtn').disabled = (val === null);
+}
+
+function answerYN(v){
+  thinkAnswers[thinkIdx] = v;
+  renderYN();
+}
+
+function renderPair(){
+  const p = VIA_PAIRS[viaIdx];
+  document.getElementById('pairTextA').textContent = p.a;
+  document.getElementById('pairTextB').textContent = p.b;
+
+  const rowA = document.getElementById('scaleA');
+  const rowB = document.getElementById('scaleB');
+  rowA.innerHTML = ''; rowB.innerHTML = '';
+  const ans = viaAnswers[viaIdx];
+  for(let i=1;i<=5;i++){
+    const ba = document.createElement('button');
+    ba.textContent = i;
+    ba.className = ans.a === i ? 'picked' : '';
+    ba.onclick = () => { viaAnswers[viaIdx].a = i; renderPair(); };
+    rowA.appendChild(ba);
+
+    const bb = document.createElement('button');
+    bb.textContent = i;
+    bb.className = ans.b === i ? 'picked' : '';
+    bb.onclick = () => { viaAnswers[viaIdx].b = i; renderPair(); };
+    rowB.appendChild(bb);
+  }
+  document.getElementById('nextBtn').disabled = (ans.a === null || ans.b === null);
+}
+
+function nextStep(){
+  if(phase === 1){
+    if(thinkAnswers[thinkIdx] === null) return;
+    if(thinkIdx === THINK_Q.length - 1){
+      phase = 2; viaIdx = 0; render();
+    } else {
+      thinkIdx++; render();
+    }
+  } else {
+    const ans = viaAnswers[viaIdx];
+    if(ans.a === null || ans.b === null) return;
+    if(viaIdx === VIA_PAIRS.length - 1){
+      showResult();
+    } else {
+      viaIdx++; render();
+    }
+  }
+}
+
+function prevStep(){
+  if(phase === 1){
+    if(thinkIdx === 0) return;
+    thinkIdx--; render();
+  } else {
+    if(viaIdx === 0){ phase = 1; thinkIdx = THINK_Q.length - 1; render(); return; }
+    viaIdx--; render();
+  }
+}
+
+function restartQuiz(){
+  phase = 1; thinkIdx = 0; viaIdx = 0;
+  thinkAnswers = new Array(THINK_Q.length).fill(null);
+  viaAnswers = new Array(VIA_PAIRS.length).fill(null).map(()=>({a:null,b:null}));
+  document.getElementById('screen-result').classList.add('hidden');
+  document.getElementById('screen-start').classList.remove('hidden');
+}
+
+/* ===================== SCORING ===================== */
+function computeThinkProfile(){
+  const raw = {PD:0,AS:0,SL:0,NO:0,CR:0};
+  THINK_Q.forEach((q,i) => { if(thinkAnswers[i] === 1) raw[q.ax]++; });
+  const pct = {};
+  Object.keys(raw).forEach(k => pct[k] = Math.round(raw[k]/8*100));
+  return pct;
+}
+
+function computeViaProfile(){
+  const subscale = {};
+  VIA_PAIRS.forEach((p,i) => {
+    const a = viaAnswers[i].a, b = viaAnswers[i].b;
+    subscale[p.sub] = a + (6 - b);
+  });
+  const pct = {};
+  Object.keys(VIRTUE_RANGES).forEach(key => {
+    const [from,to] = VIRTUE_RANGES[key];
+    let raw = 0, n = 0;
+    for(let s=from; s<=to; s++){ raw += subscale[s]; n++; }
+    const min = n*2, max = n*10;
+    pct[key] = Math.round((raw-min)/(max-min)*100);
+  });
+  return pct;
+}
+
+function showResult(){
+  const thinkPct = computeThinkProfile();
+  const viaPct = computeViaProfile();
+  const profile = Object.assign({}, thinkPct, viaPct);
+
+  document.getElementById('screen-quiz').classList.add('hidden');
+  document.getElementById('screen-result').classList.remove('hidden');
+
+  // Rank thinking + via for headline
+  const thinkRanked = Object.keys(thinkPct).map(k=>({k,v:thinkPct[k]})).sort((a,b)=>b.v-a.v);
+  const viaRanked = Object.keys(viaPct).map(k=>({k,v:viaPct[k]})).sort((a,b)=>b.v-a.v);
+  const topThink = thinkRanked[0].k;
+  const topVia = viaRanked[0].k;
+
+  document.getElementById('resultTitle').textContent = THINK_NAMES[topThink] + ' + ' + VIRTUE_NAMES[topVia];
+  document.getElementById('resultSub').textContent = THINK_DESC[topThink] + ' ' + VIRTUE_DESC[topVia];
+
+  // bars: thinking
+  const barsThink = document.getElementById('barsThink');
+  barsThink.innerHTML = '';
+  thinkRanked.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-name">${THINK_NAMES[r.k]}</div>
+      <div class="bar-track"><div class="bar-fill ${r.k===topThink?'top':''}" style="width:${r.v}%"></div></div>
+      <div class="bar-pct">${r.v}%</div>`;
+    barsThink.appendChild(row);
+  });
+
+  // bars: via
+  const barsVia = document.getElementById('barsVia');
+  barsVia.innerHTML = '';
+  viaRanked.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-name">${VIRTUE_NAMES[r.k]}</div>
+      <div class="bar-track v2"><div class="bar-fill v2 ${r.k===topVia?'top v2':''}" style="width:${r.v}%"></div></div>
+      <div class="bar-pct">${r.v}%</div>`;
+    barsVia.appendChild(row);
+  });
+
+  // club matching
+  const scored = CLUBS.map(c => {
+    let sumW = 0, sumWV = 0;
+    Object.keys(c.w).forEach(dim => {
+      const w = c.w[dim];
+      const v = profile[dim] !== undefined ? profile[dim] : 0;
+      sumW += w; sumWV += w*v;
+    });
+    const score = Math.round(sumWV/sumW);
+    return Object.assign({score}, c);
+  }).sort((a,b) => b.score - a.score);
+
+  const top = scored.slice(0,6);
+  const clubsWrap = document.getElementById('clubsWrap');
+  clubsWrap.innerHTML = '';
+  top.forEach((c,i) => {
+    const div = document.createElement('div');
+    div.className = 'club-card' + (i===0 ? '' : ' secondary');
+    div.innerHTML = `
+      <div class="club-top-row">
+        <p class="club-name">${c.name}</p>
+        <span class="club-pct mono">${c.score}%</span>
+      </div>
+      <span class="club-tag">${c.tag}</span>
+      <p class="club-desc">${c.desc}</p>`;
+    clubsWrap.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
